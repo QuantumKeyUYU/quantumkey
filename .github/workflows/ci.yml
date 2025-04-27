@@ -9,30 +9,43 @@ on:
 
 jobs:
   backend:
+    name: Run backend tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-      - run: |
-          python -m pip install --upgrade pip
-          pip install -r quantumkey-api/requirements.txt
-          cd quantumkey-api
-          pytest --maxfail=1 --disable-warnings -q
 
-  frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Install dependencies and test
         run: |
           python -m pip install --upgrade pip
           pip install -r quantumkey-api/requirements.txt
+
+          # Перейти в папку API и добавить её в PYTHONPATH
           cd quantumkey-api
-          # добавляем саму папку API в PYTHONPATH
           echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
-          # запускаем pytest как модуль
+
+          # Запустить pytest через python -m
           python -m pytest --maxfail=1 --disable-warnings -q
+
+  frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install & build
+        run: |
+          cd quantumkey-frontend
+          npm ci
+          npm run build
