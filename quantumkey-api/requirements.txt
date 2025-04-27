@@ -5,3 +5,5 @@ py_ecc
 httpx
 pytest
 pytest-asyncio
+cryptography         
+redis                
