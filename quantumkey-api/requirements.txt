@@ -1,5 +1,5 @@
- fastapi
- uvicorn[standard]
- pydantic
- py_ecc
-+httpx
+fastapi
+uvicorn[standard]
+pydantic
+py_ecc
+httpx
