@@ -3,3 +3,5 @@ uvicorn[standard]
 pydantic
 py_ecc
 httpx
++ pytest
++ pytest-asyncio
