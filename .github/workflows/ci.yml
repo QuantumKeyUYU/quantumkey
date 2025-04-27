@@ -28,7 +28,11 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: |
-          cd quantumkey-frontend
-          npm ci
-          npm run build
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r quantumkey-api/requirements.txt
+          cd quantumkey-api
+          # добавляем саму папку API в PYTHONPATH
+          echo "PYTHONPATH=$(pwd)" >> $GITHUB_ENV
+          # запускаем pytest как модуль
+          python -m pytest --maxfail=1 --disable-warnings -q
