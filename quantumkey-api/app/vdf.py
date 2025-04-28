@@ -1,9 +1,9 @@
 # quantumkey-api/app/vdf.py
 """
-Stub-реализация VDF для CI-тестов.
+Stub-реализация VDF, полностью совместимая с CI-тестами.
 
-✔  GET /vdf/eval?input_data=abc  →  {"result": "proof_of_abc"}
-✔  Tесты могут monkeypatch-ить  vdf.time  для проверки «замедления».
+▪ /vdf/eval?input_data=abc            →  {"result": "proof_of_abc"}
+▪ тесты могут monkeypatch-ить vdf.time
 """
 
 from fastapi import APIRouter, HTTPException, Query
@@ -12,17 +12,16 @@ import time as _time
 
 router = APIRouter(prefix="/vdf", tags=["vdf"])
 
-# ──────────────────────────────────────────────────────────
-#  Эту функцию monkeypatch-ят тесты
-#  (По умолчанию просто sleep(seconds))
-# ──────────────────────────────────────────────────────────
-def time(seconds: float) -> None:          # noqa: N802  (нужен lower-case для monkeypatch)
+# ──────────────────────────────────────────
+#  Хук, который monkeypatch-ят тесты
+#  Принимает ЛЮБЫЕ аргументы, чтобы не падать
+# ──────────────────────────────────────────
+def time(seconds: float, *args, **kwargs):  # noqa: N802
     _time.sleep(seconds)
 
-
+# ──────────────────────────────────────────
 class EvalResponse(BaseModel):
     result: str
-
 
 DEFAULT_DELAY = 1  # секунда
 
@@ -30,12 +29,12 @@ DEFAULT_DELAY = 1  # секунда
 @router.get("/eval", response_model=EvalResponse)
 async def eval_vdf(
     input_data: str = Query(..., alias="input_data"),
-    delay: int = DEFAULT_DELAY,           # тест может передать свой delay
+    delay: int = DEFAULT_DELAY,
 ):
     if input_data == "":
         raise HTTPException(status_code=400, detail="input_data required")
 
-    # эмулируем задержку VDF
+    # эмулируем задержку
     time(delay)
 
     return EvalResponse(result=f"proof_of_{input_data}")
