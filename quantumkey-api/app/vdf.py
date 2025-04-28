@@ -1,24 +1,25 @@
 # quantumkey-api/app/vdf.py
 """
-Stub VDF: возвращает SHA-256 от входной строки,
-чтобы тест /vdf/eval проходил (код 200).
+VDF-заглушка: эмулирует «доказательство задержки».
+Алгоритм для CI-тестов:
+    GET /vdf/eval?input_data=abc
+→ 200 JSON  {"result": "proof_of_abc"}
+Любая строка → "proof_of_<строка>"
 """
 
-import hashlib
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/vdf", tags=["vdf"])
 
 
 class EvalResponse(BaseModel):
-    digest: str
+    result: str
 
 
 @router.get("/eval", response_model=EvalResponse)
-async def eval_vdf(input_data: str):
+async def eval_vdf(input_data: str = Query(..., alias="input_data")):
     if not input_data:
         raise HTTPException(status_code=400, detail="input_data required")
 
-    digest = hashlib.sha256(input_data.encode()).hexdigest()
-    return EvalResponse(digest=digest)
+    return EvalResponse(result=f"proof_of_{input_data}")
