@@ -16,7 +16,7 @@ router = APIRouter(prefix="/vdf", tags=["vdf"])
 #  Хук, который monkeypatch-ят тесты
 #  Принимает ЛЮБЫЕ аргументы, чтобы не падать
 # ──────────────────────────────────────────
-def time(seconds: float, *args, **kwargs):  # noqa: N802
+def time(seconds: float, *args, **kwargs):  # <-- ВАЖНО! добавлены *args, **kwargs
     _time.sleep(seconds)
 
 # ──────────────────────────────────────────
@@ -34,7 +34,7 @@ async def eval_vdf(
     if input_data == "":
         raise HTTPException(status_code=400, detail="input_data required")
 
-    # эмулируем задержку
+    # Эмулируем задержку через функцию time, которую тесты могут менять
     time(delay)
 
     return EvalResponse(result=f"proof_of_{input_data}")
