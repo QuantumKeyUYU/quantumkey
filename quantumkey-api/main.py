@@ -1,17 +1,34 @@
-# quantumkey-api/main.py
 from fastapi import FastAPI
-from app.threshold     import router as threshold_router
-from app.vdf           import router as vdf_router
-from app.timelock      import router as timelock_router
-from app.pq_signature  import router as pq_router
+from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title="QuantumKey Vault API", version="0.3.0")
+from app import threshold
+from app import vdf
+from app import timelock
+from app import pq_signature
 
-# Threshold
-app.include_router(threshold_router, prefix="/threshold", tags=["Threshold"])
-# VDF
-app.include_router(vdf_router,       prefix="/vdf",       tags=["VDF"])
-# TimeLock
-app.include_router(timelock_router,  prefix="/timelock",  tags=["Timelock"])
-# Post-Quantum Signature
-app.include_router(pq_router,        prefix="/pq",        tags=["PQ-Signature"])
+app = FastAPI(
+    title="QuantumKey Vault API",
+    version="0.3.0",
+    description="Secure secret storage with Threshold Vaults, VDF, TimeLock and PQ Signatures",
+    openapi_tags=[
+        {"name": "Threshold", "description": "Split & Recover Secret using Threshold scheme"},
+        {"name": "VDF", "description": "Evaluate Verifiable Delay Function (VDF)"},
+        {"name": "Timelock", "description": "Create and Open Timelock encrypted secrets"},
+        {"name": "PQ-signature", "description": "Post-Quantum Hybrid Signature (Falcon + VDF-proof)"},
+    ]
+)
+
+# CORS Middleware (можно оставить открытым на время разработки)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Подключаем роутеры всех модулей
+app.include_router(threshold.router)
+app.include_router(vdf.router)
+app.include_router(timelock.router)
+app.include_router(pq_signature.router)
