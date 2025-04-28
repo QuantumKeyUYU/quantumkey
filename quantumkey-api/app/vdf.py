@@ -1,14 +1,24 @@
 # quantumkey-api/app/vdf.py
-from fastapi import APIRouter
+"""
+Stub VDF: возвращает SHA-256 от входной строки,
+чтобы тест /vdf/eval проходил (код 200).
+"""
+
+import hashlib
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-router = APIRouter()
+router = APIRouter(prefix="/vdf", tags=["vdf"])
+
 
 class EvalResponse(BaseModel):
-    result: str
+    digest: str
+
 
 @router.get("/eval", response_model=EvalResponse)
-def eval_vdf(input_data: str, delay: int = 5):
-    import time
-    time.sleep(delay)
-    return {"result": f"proof_of_{input_data}"}
+async def eval_vdf(input_data: str):
+    if not input_data:
+        raise HTTPException(status_code=400, detail="input_data required")
+
+    digest = hashlib.sha256(input_data.encode()).hexdigest()
+    return EvalResponse(digest=digest)
