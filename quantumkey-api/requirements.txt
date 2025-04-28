@@ -6,4 +6,5 @@ httpx
 pytest
 pytest-asyncio
 cryptography         
-redis                
+redis
+redis>=5.0.0                

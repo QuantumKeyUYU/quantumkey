@@ -6,3 +6,5 @@ quantumkey-api/.pytest_cache/
 # Node
 quantumkey-frontend/node_modules/
 quantumkey-frontend/dist/
+# Ignore Python virtual environment
+.venv/

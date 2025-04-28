@@ -1,61 +1,80 @@
-import React, { useState } from "react"
-import axios from "axios"
+import React, { useState } from 'react'
+import axios from 'axios'
 
 export default function PqSignaturePanel() {
-  const [message, setMessage] = useState("")
-  const [falconSig, setFalconSig] = useState("")
-  const [phaseProof, setPhaseProof] = useState("")
-  const [verifyResult, setVerifyResult] = useState(null)
+  const [msg, setMsg] = useState('')
+  const [sig, setSig] = useState('')
+  const [errS, setErrS] = useState(null)
+  const [vMsg, setVMsg] = useState('')
+  const [vSig, setVSig] = useState('')
+  const [resV, setResV] = useState(null)
+  const [errV, setErrV] = useState(null)
 
-  const handleSign = async () => {
-    const res = await axios.post("/pq/sign", { message })
-    setFalconSig(res.data.falcon_signature)
-    setPhaseProof(res.data.phase_proof)
-    setVerifyResult(null)
+  const handleSign = async e => {
+    e.preventDefault()
+    setErrS(null); setSig('')
+    try {
+      const { falcon_sig, phase_proof } = (await axios.post('/pq/sign', { message: msg })).data
+      setSig(`${falcon_sig}:${phase_proof}`)
+    } catch (e) {
+      setErrS(e.response?.data?.detail || e.message)
+    }
   }
 
-  const handleVerify = async () => {
-    const res = await axios.post("/pq/verify", { message, falcon_signature: falconSig, phase_proof: phaseProof })
-    setVerifyResult(res.data.valid)
+  const handleVerify = async e => {
+    e.preventDefault()
+    setErrV(null); setResV(null)
+    try {
+      const { valid } = (await axios.post('/pq/verify', {
+        message: vMsg,
+        signature: vSig
+      })).data
+      setResV(valid)
+    } catch (e) {
+      setErrV(e.response?.data?.detail || e.message)
+    }
   }
 
   return (
-    <div className="p-4 border rounded space-y-4">
-      <h2 className="text-xl font-semibold">PQ-signature</h2>
-      <textarea
-        rows={3}
-        value={message}
-        onChange={e => setMessage(e.target.value)}
-        placeholder="Message"
-        className="w-full p-2 border rounded"
-      />
-      <div className="flex gap-2">
-        <button onClick={handleSign} className="px-4 py-2 bg-green-600 text-white rounded">Sign</button>
-        <button
-          onClick={handleVerify}
-          disabled={!falconSig || !phaseProof}
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-        >
-          Verify
-        </button>
-      </div>
-      {falconSig && (
-        <div>
-          <h3 className="font-medium">Falcon Signature:</h3>
-          <pre className="bg-gray-100 p-2 rounded break-all">{falconSig}</pre>
-        </div>
-      )}
-      {phaseProof && (
-        <div>
-          <h3 className="font-medium">Phase Proof:</h3>
-          <pre className="bg-gray-100 p-2 rounded break-all">{phaseProof}</pre>
-        </div>
-      )}
-      {verifyResult !== null && (
-        <div className={`${verifyResult ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'} p-2 rounded`}>
-          {verifyResult ? 'Valid ✔️' : 'Invalid ❌'}
-        </div>
-      )}
+    <div style={{ padding: 16, background: '#eef6ff', borderRadius: 8 }}>
+      <h2>PQ-Signature</h2>
+
+      <form onSubmit={handleSign} style={{ marginBottom: 24 }}>
+        <textarea
+          value={msg}
+          onChange={e => setMsg(e.target.value)}
+          placeholder="Сообщение для подписи"
+          rows={3}
+          style={{ width: '100%', padding: 8 }}
+        />
+        <button type="submit" style={{ marginTop: 8 }}>Sign</button>
+        {sig  && <pre style={{ background: '#fff', padding: 8, marginTop: 8 }}>{sig}</pre>}
+        {errS && <div style={{ color: 'red', marginTop: 8 }}>{errS}</div>}
+      </form>
+
+      <form onSubmit={handleVerify}>
+        <textarea
+          value={vMsg}
+          onChange={e => setVMsg(e.target.value)}
+          placeholder="Сообщение для проверки"
+          rows={2}
+          style={{ width: '100%', padding: 8 }}
+        />
+        <textarea
+          value={vSig}
+          onChange={e => setVSig(e.target.value)}
+          placeholder="Подпись"
+          rows={2}
+          style={{ width: '100%', padding: 8, marginTop: 8 }}
+        />
+        <button type="submit" style={{ marginTop: 8 }}>Verify</button>
+        {resV !== null && (
+          <div style={{ marginTop: 8 }}>
+            Результат: {resV ? '✅ Valid' : '❌ Invalid'}
+          </div>
+        )}
+        {errV && <div style={{ color: 'red', marginTop: 8 }}>{errV}</div>}
+      </form>
     </div>
   )
 }

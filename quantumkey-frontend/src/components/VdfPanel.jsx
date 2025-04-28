@@ -1,55 +1,47 @@
-import React, { useState } from "react"
-import axios from "axios"
+import React, { useState } from 'react'
+import axios from 'axios'
 
 export default function VdfPanel() {
-  const [input, setInput] = useState("")
-  const [delay, setDelay] = useState(5)
-  const [proof, setProof] = useState("")
-  const [loading, setLoading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [digest, setDigest] = useState('')
+  const [error, setError] = useState(null)
 
-  const evalVdf = async () => {
-    setLoading(true)
+  const handleEval = async e => {
+    e.preventDefault()
+    setError(null)
+    setDigest('')
     try {
-      const res = await axios.get("/vdf/eval", { params: { input_data: input, delay } })
-      setProof(res.data.result)
-    } finally {
-      setLoading(false)
+      const resp = await axios.get('/vdf/eval', { params: { message: msg } })
+      setDigest(resp.data.phase_proof || resp.data.digest || resp.data) 
+    } catch (e) {
+      setError(e.response?.data?.detail || e.message)
     }
   }
 
   return (
-    <div className="p-4 border rounded space-y-3">
-      <h2 className="text-xl font-semibold">Verifiable Delay Function</h2>
-      <input
-        type="text"
-        placeholder="Input data"
-        value={input}
-        onChange={e => setInput(e.target.value)}
-        className="w-full p-2 border rounded"
-      />
-      <div className="flex items-center gap-2">
-        <label>Delay:</label>
-        <input
-          type="number"
-          value={delay}
-          min={1}
-          onChange={e => setDelay(+e.target.value)}
-          className="w-20 p-2 border rounded"
+    <div style={{ padding: 16, background: '#fafafa', borderRadius: 8 }}>
+      <h2>VDF (Verifiable Delay Function)</h2>
+
+      <form onSubmit={handleEval}>
+        <textarea
+          value={msg}
+          onChange={e => setMsg(e.target.value)}
+          placeholder="Message to eval"
+          rows={3}
+          style={{ width: '100%', padding: 8 }}
+          required
         />
-        <button
-          onClick={evalVdf}
-          disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          {loading ? "Waiting..." : "Eval VDF"}
-        </button>
-      </div>
-      {proof && (
-        <div>
-          <h3 className="font-medium">Proof:</h3>
-          <pre className="bg-gray-100 p-2 rounded break-all">{proof}</pre>
+        <button type="submit" style={{ marginTop: 8 }}>Eval VDF</button>
+      </form>
+
+      {digest && (
+        <div style={{ marginTop: 16 }}>
+          <strong>Phase Proof / Digest:</strong>
+          <pre style={{ background: '#fff', padding: 8 }}>{digest}</pre>
         </div>
       )}
+
+      {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
     </div>
   )
 }

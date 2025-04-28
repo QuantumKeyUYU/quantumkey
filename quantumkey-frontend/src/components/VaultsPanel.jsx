@@ -1,54 +1,50 @@
-import React, { useState } from "react"
-import axios from "axios"
+import React, { useState } from "react";
 
 export default function VaultsPanel() {
-  const [secret, setSecret] = useState("")
-  const [n, setN] = useState(5)
-  const [t, setT] = useState(3)
-  const [shares, setShares] = useState([])
+  const [secret, setSecret] = useState("");
+  const [n, setN] = useState(5);
+  const [k, setK] = useState(3);
+  const [shares, setShares] = useState([]);
 
   const split = async () => {
-    const res = await axios.post("/threshold/split", { secret, shares: n, threshold: t })
-    setShares(res.data.shares)
-  }
-
-  const recover = async () => {
-    const res = await axios.post("/threshold/recover", { parts: shares.slice(0, t), prime: res.data.prime })
-    alert(`Recovered: ${res.data.secret}`)
-  }
+    const resp = await fetch("/threshold/split", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ secret, shares: n, threshold: k }),
+    });
+    const data = await resp.json();
+    setShares(data.shards || []);
+  };
 
   return (
-    <div className="p-4 border rounded space-y-4">
-      <h2 className="text-xl font-semibold">Threshold Vaults</h2>
-      <input
-        type="text"
-        placeholder="Secret"
-        value={secret}
-        onChange={e => setSecret(e.target.value)}
-        className="w-full p-2 border rounded"
-      />
-      <div className="flex gap-2">
+    <div className="card">
+      <h2 className="section-title">Threshold Vaults</h2>
+      <div className="form-row">
         <input
+          className="input"
+          placeholder="Secret"
+          value={secret}
+          onChange={e => setSecret(e.target.value)}
+        />
+      </div>
+      <div className="form-row">
+        <input
+          className="input small"
           type="number"
           value={n}
-          onChange={e => setN(+e.target.value)}
-          className="w-20 p-2 border rounded"
+          onChange={e => setN(Number(e.target.value))}
         />
         <input
+          className="input small"
           type="number"
-          value={t}
-          onChange={e => setT(+e.target.value)}
-          className="w-20 p-2 border rounded"
+          value={k}
+          onChange={e => setK(Number(e.target.value))}
         />
-        <button onClick={split} className="px-4 py-2 bg-green-600 text-white rounded">Split</button>
+        <button className="btn" onClick={split}>Split</button>
       </div>
       {shares.length > 0 && (
-        <ul className="list-disc pl-5">
-          {shares.map((s, i) => (
-            <li key={i} className="break-all">{s}</li>
-          ))}
-        </ul>
+        <pre className="result">{JSON.stringify(shares, null, 2)}</pre>
       )}
     </div>
-  )
+  );
 }
