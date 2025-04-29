@@ -5,7 +5,7 @@ import time as _time
 
 router = APIRouter(prefix="/vdf", tags=["vdf"])
 
-# Тесты будут monkeypatch-ить эту функцию, поэтому она принимает любые аргументы
+# Тесты monkeypatch-ят эту функцию, поэтому она должна принимать любые аргументы
 def time(seconds: float, *args, **kwargs):
     _time.sleep(seconds)
 

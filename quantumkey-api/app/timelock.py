@@ -6,11 +6,12 @@ import uuid
 
 router = APIRouter(prefix="/timelock", tags=["timelock"])
 
+# простой in-memory store
 _store: dict[str, dict] = {}
 
 class TimelockCreateRequest(BaseModel):
     message: str = Field(..., example="secret")
-    unlock_in: int = Field(..., gt=0, description="seconds to wait")
+    unlock_in: int = Field(..., gt=0, description="seconds until unlock")
 
 class TimelockCreateResponse(BaseModel):
     id: str
