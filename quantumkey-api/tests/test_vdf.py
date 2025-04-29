@@ -1,7 +1,7 @@
 # quantumkey-api/tests/test_vdf.py
 import pytest
 from starlette.testclient import TestClient
-from app.main import app
+from main import app
 
 client = TestClient(app)
 

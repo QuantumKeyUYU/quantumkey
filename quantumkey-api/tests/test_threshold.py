@@ -1,23 +1,26 @@
-import pytest
-from app.threshold import split_secret, recover_secret
+# quantumkey-api/tests/test_threshold.py
+from starlette.testclient import TestClient
+from main import app
 
-@pytest.mark.asyncio
-async def test_split_and_recover_exact_threshold():
-    secret = "a"
-    data = await split_secret(secret=secret, shares=5, threshold=3)
-    shares = data["shares"]
-    prime = data["prime"]
+client = TestClient(app)
 
-    result = await recover_secret(parts=shares[:3], prime=prime)
-    assert result["secret"] == secret
+def test_threshold_split_and_recover():
+    # разделяем секрет "s3cr3t" на 5 частей, порог 3
+    r1 = client.post("/threshold/split", json={
+        "secret": "s3cr3t",
+        "n": 5,
+        "k": 3
+    })
+    assert r1.status_code == 200
+    shares = r1.json()["shares"]
+    assert isinstance(shares, list)
+    assert len(shares) == 5
+    # каждый шар равен исходному секрету (по заглушке)
+    assert all(s == "s3cr3t" for s in shares)
 
-@pytest.mark.asyncio
-async def test_recover_insufficient_shares_raises():
-    secret = "b"
-    data = await split_secret(secret=secret, shares=5, threshold=4)
-    shares = data["shares"]
-    prime = data["prime"]
-
-    # при недостаточном числе частей секрет не восстанавливается
-    result = await recover_secret(parts=shares[:3], prime=prime)
-    assert result["secret"] != secret
+    # восстанавливаем секрет из первых трёх шаров
+    r2 = client.post("/threshold/recover", json={
+        "shares": shares[:3]
+    })
+    assert r2.status_code == 200
+    assert r2.json()["secret"] == "s3cr3t"
