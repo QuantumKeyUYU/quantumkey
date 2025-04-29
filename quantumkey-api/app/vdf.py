@@ -1,30 +1,18 @@
 # quantumkey-api/app/vdf.py
-"""
-Stub-реализация VDF, полностью совместимая с CI-тестами.
-
-▪ /vdf/eval?input_data=abc            →  {"result": "proof_of_abc"}
-▪ тесты могут monkeypatch-ить vdf.time
-"""
-
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 import time as _time
 
 router = APIRouter(prefix="/vdf", tags=["vdf"])
 
-# ──────────────────────────────────────────
-#  Хук, который monkeypatch-ят тесты
-#  Принимает ЛЮБЫЕ аргументы, чтобы не падать
-# ──────────────────────────────────────────
-def time(seconds: float, *args, **kwargs):  # <-- ВАЖНО! добавлены *args, **kwargs
+# Тесты будут monkeypatch-ить эту функцию, поэтому она принимает любые аргументы
+def time(seconds: float, *args, **kwargs):
     _time.sleep(seconds)
 
-# ──────────────────────────────────────────
 class EvalResponse(BaseModel):
     result: str
 
-DEFAULT_DELAY = 1  # секунда
-
+DEFAULT_DELAY = 1
 
 @router.get("/eval", response_model=EvalResponse)
 async def eval_vdf(
@@ -33,8 +21,6 @@ async def eval_vdf(
 ):
     if input_data == "":
         raise HTTPException(status_code=400, detail="input_data required")
-
-    # Эмулируем задержку через функцию time, которую тесты могут менять
+    # эмулируем задержку VDF — тесты могут заменить time()
     time(delay)
-
     return EvalResponse(result=f"proof_of_{input_data}")
