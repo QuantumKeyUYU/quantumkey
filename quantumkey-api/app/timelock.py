@@ -1,11 +1,13 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+# quantumkey-api/app/timelock.py
+
 import time
 from uuid import uuid4
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/timelock", tags=["timelock"])
-_STORE: dict[str, dict] = {}
+router = APIRouter()
 
+# простые pydantic-модели для запросов/ответов
 class CreateReq(BaseModel):
     message: str
     unlock_in: int
@@ -13,20 +15,24 @@ class CreateReq(BaseModel):
 class OpenResp(BaseModel):
     message: str
 
+# внутренняя in-memory «база»
+_STORE: dict[str, dict] = {}
+
 @router.post("/create")
 async def create(req: CreateReq):
     lock_id = str(uuid4())
     _STORE[lock_id] = {
         "msg": req.message,
-        "ts": time.time() + req.unlock_in
+        "ts": time.time(),
+        "unlock_in": req.unlock_in,
     }
     return {"id": lock_id}
 
-@router.get("/open/{lock_id}", response_model=OpenResp)
-async def open_lock(lock_id: str):
-    entry = _STORE.get(lock_id)
-    if not entry:
+@router.get("/open/{id_}", response_model=OpenResp)
+async def open_lock(id_: str):
+    rec = _STORE.get(id_)
+    if not rec:
         raise HTTPException(status_code=404, detail="not found")
-    if time.time() < entry["ts"]:
-        raise HTTPException(status_code=403, detail="forbidden")
-    return {"message": entry["msg"]}
+    if time.time() < rec["ts"] + rec["unlock_in"]:
+        raise HTTPException(status_code=403, detail="not yet unlocked")
+    return {"message": rec["msg"]}
