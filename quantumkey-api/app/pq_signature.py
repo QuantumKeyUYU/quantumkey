@@ -1,39 +1,30 @@
-# quantumkey-api/main.py
+from fastapi import APIRouter
+from pydantic import BaseModel
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+router = APIRouter()
 
-# импорт роутеров
-from app.threshold_vault import router as threshold_router
-from app.vdf import router as vdf_router
-from app.timelock import router as timelock_router
-from app.pq_signature import router as pq_router
+class SignRequest(BaseModel):
+    message: str
 
-app = FastAPI(
-    title="QuantumKey Vault API",
-    version="0.3.1",
-    description="Secure key management: Threshold Vaults, VDF, TimeLock & PQ-Signatures"
-)
+class SignResponse(BaseModel):
+    signature: str
+    phase_proof: str
 
-# Разрешаем CORS (например, всё домены)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+@router.post("/sign", response_model=SignResponse)
+async def sign(req: SignRequest):
+    # пока просто возвращаем «заглушки»
+    sig = f"falcon_sig_stub:{req.message}"
+    proof = f"phase_proof_stub:{req.message}"
+    return {"signature": sig, "phase_proof": proof}
 
-# Подключаем все модули
-app.include_router(threshold_router)
-app.include_router(vdf_router)
-app.include_router(timelock_router)
-app.include_router(pq_router)
+class VerifyRequest(BaseModel):
+    message: str
+    signature: str
 
+class VerifyResponse(BaseModel):
+    valid: bool
 
-# ——————————————————————————————————————————————————————————————————————————
-# Если запускаете напрямую, полезно иметь точку входа:
-# (для uvicorn: `uvicorn main:app --reload`)
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+@router.post("/verify", response_model=VerifyResponse)
+async def verify(req: VerifyRequest):
+    # всегда валидно
+    return {"valid": True}

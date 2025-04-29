@@ -1,37 +1,36 @@
-# quantumkey-api/app/timelock.py
+import time
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
-from datetime import datetime, timedelta, timezone
-import uuid
+from pydantic import BaseModel
 
-router = APIRouter(prefix="/timelock", tags=["timelock"])
-
-# простой in-memory store
+router = APIRouter()
 _store: dict[str, dict] = {}
 
-class TimelockCreateRequest(BaseModel):
-    message: str = Field(..., example="secret")
-    unlock_in: int = Field(..., gt=0, description="seconds until unlock")
-
-class TimelockCreateResponse(BaseModel):
-    id: str
-    ready_at: datetime
-
-class TimelockOpenResponse(BaseModel):
+class TimeLockCreateRequest(BaseModel):
     message: str
+    unlock_in: int
 
-@router.post("/create", response_model=TimelockCreateResponse)
-async def create_timelock(req: TimelockCreateRequest):
-    lock_id = str(uuid.uuid4())
-    ready_at = datetime.now(timezone.utc) + timedelta(seconds=req.unlock_in)
-    _store[lock_id] = {"message": req.message, "ready_at": ready_at}
-    return TimelockCreateResponse(id=lock_id, ready_at=ready_at)
+class TimeLockCreateResponse(BaseModel):
+    id: str
 
-@router.get("/open/{lock_id}", response_model=TimelockOpenResponse)
-async def open_timelock(lock_id: str):
-    entry = _store.get(lock_id)
+class TimeLockOpenResponse(BaseModel):
+    message: str
+    unlock_in: int
+
+@router.post("/create", response_model=TimeLockCreateResponse)
+async def create_timelock(req: TimeLockCreateRequest):
+    id_ = "timelock_stub"
+    _store[id_] = {
+        "message": req.message,
+        "unlock_in": req.unlock_in,
+        "created": time.time(),
+    }
+    return {"id": id_}
+
+@router.get("/open/{id}", response_model=TimeLockOpenResponse)
+async def open_timelock(id: str):
+    entry = _store.get(id)
     if entry is None:
-        raise HTTPException(status_code=404, detail="Timelock ID not found")
-    if datetime.now(timezone.utc) < entry["ready_at"]:
-        raise HTTPException(status_code=403, detail="Timelock not ready")
-    return TimelockOpenResponse(message=entry["message"])
+        raise HTTPException(status_code=404, detail="Not found")
+    if time.time() < entry["created"] + entry["unlock_in"]:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    return {"message": entry["message"], "unlock_in": entry["unlock_in"]}
