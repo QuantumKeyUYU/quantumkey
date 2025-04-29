@@ -1,13 +1,11 @@
-# quantumkey-api/main.py
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-# импорт роутеров
+# импортируем роутеры
 from app.threshold_vault import router as threshold_router
-from app.vdf import router as vdf_router
-from app.timelock import router as timelock_router
-from app.pq_signature import router as pq_router
+from app.vdf             import router as vdf_router
+from app.timelock        import router as timelock_router
+from app.pq_signature    import router as pq_router
 
 app = FastAPI(
     title="QuantumKey Vault API",
@@ -15,7 +13,7 @@ app = FastAPI(
     description="Secure key management: Threshold Vaults, VDF, TimeLock & PQ-Signatures"
 )
 
-# Разрешаем CORS (например, всё домены)
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,16 +22,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Подключаем все модули
+# включаем маршруты
 app.include_router(threshold_router)
 app.include_router(vdf_router)
 app.include_router(timelock_router)
 app.include_router(pq_router)
 
 
-# ——————————————————————————————————————————————————————————————————————————
-# Если запускаете напрямую, полезно иметь точку входа:
-# (для uvicorn: `uvicorn main:app --reload`)
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
