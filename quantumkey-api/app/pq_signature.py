@@ -1,20 +1,27 @@
 from fastapi import APIRouter
-from fastapi.params import Body
 from pydantic import BaseModel
 
-router = APIRouter()
+router = APIRouter(prefix="/pq", tags=["pq-signature"])
 
-class PQRequest(BaseModel):
+class SignReq(BaseModel):
     message: str
 
-class PQResponse(BaseModel):
+class SignResp(BaseModel):
     signature: str
     phase_proof: str
 
-@router.post("/sign", response_model=PQResponse)
-async def sign_and_verify(req: PQRequest = Body(...)):
-    # простая заглушка
-    return {
-        "signature":      "falcon_sig_stub",
-        "phase_proof":    "falcon_sig_stub"
-    }
+class VerifyReq(BaseModel):
+    signature: str
+    phase_proof: str
+    message: str
+
+@router.post("/sign", response_model=SignResp)
+async def sign(req: SignReq):
+    sig   = f"falcon_sig_{req.message}"
+    proof = f"phase_proof_{req.message}"
+    return {"signature": sig, "phase_proof": proof}
+
+@router.post("/verify")
+async def verify(req: VerifyReq):
+    valid = req.signature.startswith("falcon_sig_") and req.phase_proof.startswith("phase_proof_")
+    return {"valid": valid}

@@ -4,7 +4,11 @@ from app.main import app
 client = TestClient(app)
 
 def test_threshold_split_and_combine():
-    r1 = client.post("/threshold/split",   json={"shares":3})
-    r2 = client.post("/threshold/combine", json={"shares":3})
-    assert r1.status_code == 200 and r1.json()["status"] == "ok"
-    assert r2.status_code == 200 and r2.json()["status"] == "ok"
+    r = client.post("/threshold/split", json={"message":"hello","n":3,"k":2})
+    assert r.status_code == 200
+    shares = r.json()["shares"]
+    assert isinstance(shares, list) and len(shares)==3
+
+    r2 = client.post("/threshold/combine", json={"shares": shares[:2]})
+    assert r2.status_code == 200
+    assert r2.json()["message"] == "hello"
