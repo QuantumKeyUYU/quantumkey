@@ -1,46 +1,35 @@
 # ========================
 # Operating System files
 # ========================
-# Windows
+# Windows thumbnail cache files
 Thumbs.db
 ehthumbs.db
-Desktop.ini
 
-# macOS
+# macOS Finder files
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# Linux
+# Linux Trash files
 .Trash-*
 
 # ========================
 # IDE / Editor files
 # ========================
-# VSCode
 .vscode/
-.history/
-
-# JetBrains
 .idea/
-*.iml
-
-# Visual Studio
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-
-# Sublime
-*.sublime-project
-*.sublime-workspace
+*.sw?
 
 # ========================
 # Python
 # ========================
 # Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
+**/__pycache__/
+**/*.py[cod]
 *$py.class
 
 # C extensions
@@ -50,83 +39,99 @@ __pycache__/
 .Python
 build/
 dist/
+downloads/
 eggs/
+.eggs/
+*.egg
 *.egg-info/
-.installed.cfg
 pip-wheel-metadata/
 __pypackages__/
 
 # Virtual environments
-env/
-venv/
-ENV/
 .venv/
+venv/
+env/
+ENV/
 env.bak/
 venv.bak/
 
-# Test / coverage reports
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
 htmlcov/
-.tox/
-.nox/
 .coverage
 .coverage.*
 .cache
 .pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
 
-# Installer logs
-pip-delete-this-directory.txt
+# Translations
+*.mo
+*.pot
 
-# PyInstaller
-*.spec
-*.manifest
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
-# Jupyter
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Jupyter Notebook
 .ipynb_checkpoints/
+
+# IPython
+profile_default/
+ipython_config.py
 
 # ========================
 # Node / JavaScript
 # ========================
-# Dependencies
+# dependencies
 node_modules/
 jspm_packages/
 
-# Production
-dist/
-build/
+# production builds
+quantumkey-frontend/dist/
+quantumkey-frontend/build/
 
-# Vite / Rollup
-.vite/
-
-# Logs
+# misc
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Coverage
+# Vite / Rollup caches
+quantumkey-frontend/.vite/
 coverage/
 
 # ========================
-# GitHub Actions
+# Monorepo-specific
 # ========================
-# Ignore all workflows except ci.yml
-.github/workflows/*
-!.github/workflows/ci.yml
-
-# ========================
-# Project-specific
-# ========================
-# Python API
+# API subproject
 quantumkey-api/.venv/
-quantumkey-api/__pycache__/
+quantumkey-api/.pytest_cache/
 quantumkey-api/app/__pycache__/
 quantumkey-api/tests/__pycache__/
 
-# Frontend
+# Frontend subproject
 quantumkey-frontend/node_modules/
-quantumkey-frontend/dist/
-quantumkey-frontend/.vite/
+quantumkey-frontend/.cache/
 
+# ========================
 # Misc
-.Dockerfile.swp
+# ========================
+.DS_Store
+.env
+.env.*.local
+*.local
