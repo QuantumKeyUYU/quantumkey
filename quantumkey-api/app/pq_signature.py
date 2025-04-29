@@ -1,27 +1,32 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
+from typing import Any, Dict
 
-router = APIRouter(prefix="/pq", tags=["pq-signature"])
+router = APIRouter()
 
 class SignReq(BaseModel):
     message: str
 
-class SignResp(BaseModel):
-    signature: str
+class SignRes(BaseModel):
+    falcon_sig: str
     phase_proof: str
+
+@router.post("/sign", response_model=SignRes)
+async def sign(req: SignReq) -> SignRes:
+    # простая «заглушка» с константными строками
+    return SignRes(
+        falcon_sig="falcon_sig_stub",
+        phase_proof="phase_proof_stub",
+    )
 
 class VerifyReq(BaseModel):
-    signature: str
-    phase_proof: str
     message: str
+    signature: Dict[str, Any]
 
-@router.post("/sign", response_model=SignResp)
-async def sign(req: SignReq):
-    sig   = f"falcon_sig_{req.message}"
-    proof = f"phase_proof_{req.message}"
-    return {"signature": sig, "phase_proof": proof}
+class VerifyRes(BaseModel):
+    valid: bool
 
-@router.post("/verify")
-async def verify(req: VerifyReq):
-    valid = req.signature.startswith("falcon_sig_") and req.phase_proof.startswith("phase_proof_")
-    return {"valid": valid}
+@router.post("/verify", response_model=VerifyRes)
+async def verify(req: VerifyReq) -> VerifyRes:
+    # всегда «валидно»
+    return VerifyRes(valid=True)
