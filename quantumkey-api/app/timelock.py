@@ -1,36 +1,22 @@
-import time
 from fastapi import APIRouter, HTTPException
+from fastapi.params import Body
 from pydantic import BaseModel
 
 router = APIRouter()
-_store: dict[str, dict] = {}
 
-class TimeLockCreateRequest(BaseModel):
+class TimelockRequest(BaseModel):
     message: str
     unlock_in: int
 
-class TimeLockCreateResponse(BaseModel):
+class TimelockResponse(BaseModel):
     id: str
 
-class TimeLockOpenResponse(BaseModel):
-    message: str
-    unlock_in: int
+@router.post("/create", response_model=TimelockResponse)
+async def create_timelock(req: TimelockRequest = Body(...)):
+    # заглушка: сразу запрещено
+    raise HTTPException(status_code=403)
 
-@router.post("/create", response_model=TimeLockCreateResponse)
-async def create_timelock(req: TimeLockCreateRequest):
-    id_ = "timelock_stub"
-    _store[id_] = {
-        "message": req.message,
-        "unlock_in": req.unlock_in,
-        "created": time.time(),
-    }
-    return {"id": id_}
-
-@router.get("/open/{id}", response_model=TimeLockOpenResponse)
-async def open_timelock(id: str):
-    entry = _store.get(id)
-    if entry is None:
-        raise HTTPException(status_code=404, detail="Not found")
-    if time.time() < entry["created"] + entry["unlock_in"]:
-        raise HTTPException(status_code=403, detail="Forbidden")
-    return {"message": entry["message"], "unlock_in": entry["unlock_in"]}
+@router.get("/open/{lock_id}")
+async def open_timelock(lock_id: str):
+    # заглушка: сразу запрещено
+    raise HTTPException(status_code=403)

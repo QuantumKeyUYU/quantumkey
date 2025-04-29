@@ -1,16 +1,19 @@
 from fastapi import APIRouter
+from fastapi.params import Body
 from pydantic import BaseModel
 
 router = APIRouter()
 
-class ThresholdCreateRequest(BaseModel):
-    # сюда можно добавить поля (например secret, n, k)
-    pass
+class ThresholdRequest(BaseModel):
+    shares: int
 
 class ThresholdResponse(BaseModel):
-    vault_id: str
+    status: str
 
-@router.post("/create", response_model=ThresholdResponse)
-async def create_threshold(req: ThresholdCreateRequest):
-    # заглушка
-    return {"vault_id": "threshold_vault_stub"}
+@router.post("/split", response_model=ThresholdResponse)
+async def split_secret(req: ThresholdRequest = Body(...)):
+    return {"status": "ok"}
+
+@router.post("/combine", response_model=ThresholdResponse)
+async def combine_secret(req: ThresholdRequest = Body(...)):
+    return {"status": "ok"}
